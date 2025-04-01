@@ -1,6 +1,6 @@
 # http4s Learning Journey with Scala Sage (Gem)
 
-This repository documents my personal journey of learning http4s, Cats Effect, FS2, and ScalaTest with the guidance of an AI agent named **Scala Sage**, created using Genni.
+This repository documents my personal journey of learning http4s with the guidance of an AI agent named **Scala Sage**.
 
 ## Scala Sage's Role
 
@@ -54,4 +54,4 @@ graph TD
 
 ## License
 
-MIT License
+[MIT License](LICENSE)
