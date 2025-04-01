@@ -1,0 +1,11 @@
+graph TD
+    A[Topic Introduction: Theory & Samples] --> B{Questions?};
+    B -- Yes --> C[Answers & Clarifications] --> B;
+    B -- No --> D[Hands-on Exercise];
+    D --> E[Solution Submission];
+    E --> F[Solution Review & Feedback];
+    F --> G{More Questions?};
+    G -- Yes --> C;
+    G -- No --> H{Ready for Next Topic?};
+    H -- Yes --> A;
+    H -- No --> D;
