@@ -1,10 +1,11 @@
+@host=localhost:8080
 
 ### GET the details of a product with the specified UUID
-GET localhost:8080/products/123e4567-e89b-12d3-a456-426614174000
+GET {{host}}/products/123e4567-e89b-12d3-a456-426614174000
 
 ### Creates a new product with the specified details
 # The UUID is a valid identifier for the product in the system.
-POST localhost:8080/products
+POST {{host}}/products
 Content-Type: application/json
 
 {
@@ -16,11 +17,33 @@ Content-Type: application/json
 ### Attempts to create a new product with an invalid UUID.
 # This request attempts to create a new product with an invalid UUID.
 # The server should return an error indicating that the UUID is not valid.
-POST localhost:8080/products
+POST {{host}}/products
 Content-Type: application/json
 
 {
   "id": "invalid-uuid",
   "name": "Laptop",
+  "price": 1200.00
+}
+
+### Test retrieving a non-existent product
+GET {{host}}/products/invalid-uuid
+
+### Test creating a product with negative price
+POST {{host}}/products
+Content-Type: application/json
+
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "Laptop",
+  "price": -1200.00
+}
+
+### Test creating a product with missing name
+POST {{host}}/products
+Content-Type: application/json
+
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
   "price": 1200.00
 }
