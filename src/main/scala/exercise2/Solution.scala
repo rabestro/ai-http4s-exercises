@@ -11,6 +11,8 @@ import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 import java.time.LocalDate
+import java.util.UUID
+import scala.util.Try
 
 object Solution extends IOApp {
   implicit val logging: LoggerFactory[IO] = Slf4jFactory.create[IO]
@@ -20,16 +22,18 @@ object Solution extends IOApp {
       .fromTry(scala.util.Try(LocalDate.parse(param.value)))
       .leftMap(t => ParseFailure(s"Invalid LocalDate: ${t.getMessage}", t.getMessage))
       .toValidatedNel
+
   object DateMatcher extends QueryParamDecoderMatcher[LocalDate]("date")
+
   object PageMatcher extends OptionalQueryParamDecoderMatcher[Int]("page")
 
   private object CategoryMatcher extends QueryParamDecoderMatcher[String]("category")
 
   private val httpRoutes = HttpRoutes.of[IO] {
-    case GET -> Root / "users" / UUIDVar(userId) =>
-      Ok(s"User ID: $userId")
-    case GET -> Root / "users" / wrongId =>
-      BadRequest(s"The userId is not a valid UUID: $wrongId")
+    case GET -> Root / "users" / userId =>
+      IO.fromEither(Try(UUID.fromString(userId)).toEither)
+        .flatMap(userId => Ok(s"User ID: $userId"))
+        .handleErrorWith(_ => BadRequest("Invalid UUID format"))
     case GET -> Root / "articles" / IntVar(articleId) =>
       Ok(s"Article ID: $articleId")
     case GET -> Root / "products" :? CategoryMatcher(category) +& DateMatcher(date) +& PageMatcher(page) =>
