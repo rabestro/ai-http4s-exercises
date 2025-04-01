@@ -1,6 +1,3 @@
-### GET request to example server
-GET {{host}}/hello/{{$random.name.firstName}}
-
 ### The userId is a valid UUID
 GET {{host}}/users/{{$random.uuid}}
 

@@ -1,60 +1,29 @@
 package exercise2
 
-import cats.data.Validated
 import cats.effect.{ExitCode, IO, IOApp}
-import org.http4s._
-import org.http4s.dsl.io._
+import com.comcast.ip4s.IpLiteralSyntax
+import exercise2.routes.Routes
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-import java.time.LocalDate
-import java.util.UUID
-import scala.util.Try
-
 object Solution extends IOApp {
   implicit val logging: LoggerFactory[IO] = Slf4jFactory.create[IO]
-
-  implicit val localDateDecoder: QueryParamDecoder[LocalDate] = param =>
-    Validated
-      .fromTry(scala.util.Try(LocalDate.parse(param.value)))
-      .leftMap(t => ParseFailure(s"Invalid LocalDate: ${t.getMessage}", t.getMessage))
-      .toValidatedNel
-
-  object DateMatcher extends QueryParamDecoderMatcher[LocalDate]("date")
-
-  object PageMatcher extends OptionalQueryParamDecoderMatcher[Int]("page")
-
-  private object CategoryMatcher extends QueryParamDecoderMatcher[String]("category")
-
-  private val httpRoutes = HttpRoutes.of[IO] {
-    case GET -> Root / "users" / userId =>
-      IO.fromEither(Try(UUID.fromString(userId)).toEither)
-        .flatMap(userId => Ok(s"User ID: $userId"))
-        .handleErrorWith(_ => BadRequest("Invalid UUID format"))
-    case GET -> Root / "articles" / IntVar(articleId) =>
-      Ok(s"Article ID: $articleId")
-    case GET -> Root / "products" :? CategoryMatcher(category) +& DateMatcher(date) +& PageMatcher(page) =>
-      Ok(s"Category: $category, Date: $date, Page: ${page.getOrElse(1)}")
-    case GET -> Root / "hello" / name =>
-      Ok(s"Hello, $name!")
-    case req@POST -> Root / "echo" =>
-      req.as[String].flatMap(body => Ok(body))
-  }
 
   private val loggedRoutes = Logger.httpApp(
     logHeaders = true,
     logBody = true
-  )(httpRoutes.orNotFound)
+  )(Routes.routes.orNotFound)
 
   override def run(args: List[String]): IO[ExitCode] =
     EmberServerBuilder
       .default[IO]
+      .withHost(ipv4"127.0.0.1")
+      .withPort(port"8080")
       .withHttpApp(loggedRoutes)
       .build
       .useForever
       .as(ExitCode.Success)
 }
-
