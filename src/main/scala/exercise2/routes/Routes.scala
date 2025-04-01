@@ -1,7 +1,7 @@
 package exercise2.routes
 
-import cats.data.Validated
 import cats.effect.IO
+import exercise2.decoders.LocalDateDecoder._
 import org.http4s._
 import org.http4s.dsl.io._
 
@@ -10,15 +10,9 @@ import java.util.UUID
 import scala.util.Try
 
 object Routes {
-  implicit val localDateDecoder: QueryParamDecoder[LocalDate] = param =>
-    Validated
-      .fromTry(scala.util.Try(LocalDate.parse(param.value)))
-      .leftMap(t => ParseFailure(s"Invalid LocalDate: ${t.getMessage}", t.getMessage))
-      .toValidatedNel
+  private object DateMatcher extends QueryParamDecoderMatcher[LocalDate]("date")
 
-  object DateMatcher extends QueryParamDecoderMatcher[LocalDate]("date")
-
-  object PageMatcher extends OptionalQueryParamDecoderMatcher[Int]("page")
+  private object PageMatcher extends OptionalQueryParamDecoderMatcher[Int]("page")
 
   private object CategoryMatcher extends QueryParamDecoderMatcher[String]("category")
 
