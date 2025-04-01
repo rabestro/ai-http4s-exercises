@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <option name="separateProdTestSources" value="true" />
+    <profile name="sbt 1" modules="ai-http4s-exercises,ai-http4s-exercises.main,ai-http4s-exercises.test,exercise1,exercise1.main,exercise1.test" />
+  </component>
+</project>
