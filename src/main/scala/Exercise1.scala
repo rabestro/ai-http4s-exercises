@@ -5,6 +5,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
+import org.http4s.server.middleware.Logger
 
 object Exercise1 extends IOApp {
   implicit val logging: LoggerFactory[IO] = Slf4jFactory.create[IO]
@@ -16,11 +17,12 @@ object Exercise1 extends IOApp {
     case req@POST -> Root / "echo" =>
       req.as[String].flatMap(body => Ok(body))
   }
+  private val loggedRoutes = Logger.httpApp(logHeaders = true, logBody = true)(httpRoutes.orNotFound)
 
   override def run(args: List[String]): IO[ExitCode] =
     EmberServerBuilder
       .default[IO]
-      .withHttpApp(httpRoutes.orNotFound)
+      .withHttpApp(loggedRoutes)
       .build
       .useForever
       .as(ExitCode.Success)
