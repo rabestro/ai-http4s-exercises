@@ -1,0 +1,42 @@
+### GET request to example server
+GET {{host}}/hello/{{$random.name.firstName}}
+
+### The userId is a valid UUID
+GET {{host}}/users/{{$random.uuid}}
+
+### The userId is not a valid UUID
+GET {{host}}/users/wrong-uuid
+
+### The articleId is a valid integer
+GET {{host}}/articles/{{$random.integer(1, 1000)}}
+
+### The articleId is a invalid integer
+GET {{host}}/articles/wrong-integer
+
+### The product with correct date and missed page (default page is 1)
+@date = 2025-02-23
+@category = {{$random.commerce.department}}
+GET {{host}}/products?category={{category}}&date=2025-02-23
+
+### The product with correct date and page
+@page = {{$random.integer(1, 500)}}
+GET {{host}}/products?category={{category}}&date={{date}}&page={{page}}
+
+### The product with wrong date
+GET {{host}}/products?category={{category}}&date=xxxx
+
+###
+GET {{host}}/users/123e4567-e89b-12d3-a456-426614174000
+###
+GET {{host}}/articles/42
+###
+GET {{host}}/products?category=electronics&date=2025-04-01&page=2
+###
+GET {{host}}/products?category=books&date=2025-04-01
+###
+GET {{host}}/users/invalid-uuid
+###
+GET {{host}}/products?category=books&date=invalid-date
+
+
+
