@@ -36,7 +36,6 @@ graph TD
     * Introduction to http4s and basic HTTP handling.
     * Logging requests and responses.
     * Understanding Blaze vs. Ember servers.
-    * Module naming conventions.
 2.  **Path and Query Parameters**
     * Handling path and query parameters in http4s.
     * Code organization for http4s web applications.
