@@ -1,3 +1,4 @@
+
 ### GET the details of a product with the specified UUID
 GET localhost:8080/products/123e4567-e89b-12d3-a456-426614174000
 
