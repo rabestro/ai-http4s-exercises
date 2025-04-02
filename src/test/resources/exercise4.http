@@ -1,20 +1,47 @@
-###
+### Retrieves the details of the user with the specified ID
 GET {{host}}/users/123e4567-e89b-12d3-a456-426614174000
 
-###
+### Retrieves the details of the user with the non-existing ID
 GET {{host}}/users/123e4567-e89b-12d3-a456-426614174001
 
-###
+### Retrieves the details of the user with the invalid ID
 GET {{host}}/users/invalid-uuid
 
-### Creates a new user with the specified details
-# The UUID is a valid identifier for the user in the system.
+### Creates a new user with the invalid name and age details
 POST {{host}}/users
 Content-Type: application/json
 
 {
-  "id": "{{$random.uuid}}",
+  "name": "",
+  "age": -1
+}
+
+### Creates a new user with the specified details
+POST {{host}}/users
+Content-Type: application/json
+
+{
   "name": "{{$random.name.name}}",
   "age": {{$random.integer(18, 65)}}
 }
+
+### Creates a new user with the invalid age details
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "name": "{{$random.name.name}}",
+  "age": -1
+}
+
+
+### Creates a new user with the invalid name details
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "name": "",
+  "age": {{$random.integer(18, 65)}}
+}
+
 

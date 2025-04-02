@@ -1,9 +1,10 @@
 package exercise4.routes
 
+import cats.data.{Validated, ValidatedNel}
 import cats.effect.IO
 import cats.implicits._
 import exercise4.error.{AppError, UserNotFound}
-import exercise4.model.User
+import exercise4.model.UserDetails
 import exercise4.service.UserService
 import io.circe.Json
 import org.http4s.circe.CirceEntityCodec._
@@ -25,9 +26,18 @@ class UserRoutes(userService: UserService[IO]) {
       }.handleErrorWith(handleUUIDError)
 
     case req@POST -> Root / "users" =>
-      req.as[User].flatMap { user =>
-        userService.createUser(user).flatMap(createdUser => Created(createdUser))
-      }.handleErrorWith(_ => BadRequest(Json.obj("error" -> Json.fromString("Invalid User data"))))
+      req.as[UserDetails].flatMap { user =>
+        validateUser(user) match {
+          case Validated.Valid(validUser) =>
+            userService.createUser(validUser).flatMap(createdUser => Created(createdUser))
+          case Validated.Invalid(errors) =>
+            BadRequest(Json.obj(
+              "error" -> Json.fromString("Invalid User data"),
+              "details" -> Json.fromValues(errors.toList.map(Json.fromString))
+            ))
+        }
+      }.handleErrorWith(e => BadRequest(Json.obj("error" ->
+        Json.fromString(s"Error processing request: ${e.getMessage}"))))
   }
 
   private def parseUUID(userId: String): IO[UUID] =
@@ -41,4 +51,15 @@ class UserRoutes(userService: UserService[IO]) {
 
   private def handleUUIDError(error: Throwable): IO[Response[IO]] =
     BadRequest(Json.obj("error" -> Json.fromString("Invalid UUID format")))
+
+  def validateUser(user: UserDetails): ValidatedNel[String, UserDetails] = {
+    val nameValidation: ValidatedNel[String, String] =
+      if (user.name.nonEmpty) user.name.validNel
+      else "Name cannot be empty".invalidNel
+    val ageValidation: ValidatedNel[String, Int] =
+      if (user.age > 0) user.age.validNel
+      else "Age must be positive".invalidNel
+
+    (nameValidation, ageValidation).mapN((_, _) => user)
+  }
 }
