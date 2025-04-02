@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
     scalacOptions += "-Ymacro-annotations"
   )
 
-val Http4sVersion = "1.0.0-M44"
+val Http4sVersion = "0.23.30"
 val CirceVersion = "0.14.12"
 
 libraryDependencies ++= Seq(

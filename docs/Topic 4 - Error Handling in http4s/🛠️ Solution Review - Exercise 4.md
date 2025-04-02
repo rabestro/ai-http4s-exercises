@@ -51,7 +51,7 @@ import cats.data.{Validated, ValidatedNel}
 import cats.effect.{Concurrent, IO}
 import cats.implicits._
 import exercise4.error.{AppError, UserNotFound}
-import exercise4.model.UserDetails
+import exercise4.model.UserForm
 import exercise4.service.UserService
 import io.circe.Json
 import org.http4s.circe.CirceEntityCodec._
@@ -61,7 +61,7 @@ import org.http4s.{HttpRoutes, Response}
 
 import java.util.UUID
 
-class UserRoutes(userService: UserService[IO]) extends Http4sDsl[IO]{
+class UserRoutes(userService: UserService[IO]) extends Http4sDsl[IO] {
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "users" / userId =>
@@ -73,7 +73,7 @@ class UserRoutes(userService: UserService[IO]) extends Http4sDsl[IO]{
       }.handleErrorWith(handleUUIDError)
 
     case req@POST -> Root / "users" =>
-      req.as[UserDetails].flatMap { user =>
+      req.as[UserForm].flatMap { user =>
         validateUser(user) match {
           case Validated.Valid(validUser) =>
             userService.createUser(validUser).flatMap(createdUser => Created(createdUser))
@@ -98,7 +98,7 @@ class UserRoutes(userService: UserService[IO]) extends Http4sDsl[IO]{
   private def handleUUIDError(error: Throwable): IO[Response[IO]] =
     BadRequest(Json.obj("error" -> Json.fromString("Invalid UUID format"))).flatMap(result => result.withContentTypeOption(Some(`Content-Type`(org.http4s.MediaType.application.json))))
 
-  def validateUser(user: UserDetails): ValidatedNel[String, UserDetails] = {
+  def validateUser(user: UserForm): ValidatedNel[String, UserForm] = {
     val nameValidation: ValidatedNel[String, String] =
       if (user.name.nonEmpty) user.name.validNel
       else "Name cannot be empty".invalidNel

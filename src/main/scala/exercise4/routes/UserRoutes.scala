@@ -1,11 +1,11 @@
 package exercise4.routes
 
 import cats.MonadThrow
-import cats.data.{Validated, ValidatedNel}
+import cats.data.Validated
 import cats.effect._
 import cats.syntax.all._
 import exercise4.error.{AppError, UserNotFound}
-import exercise4.model.UserDetails
+import exercise4.model.{UserForm, UserFormValidator}
 import exercise4.service.UserService
 import io.circe.Json
 import org.http4s.circe.CirceEntityCodec._
@@ -15,9 +15,7 @@ import org.http4s.{HttpRoutes, Response}
 
 import java.util.UUID
 
-class UserRoutes[F[_]: Concurrent](userService: UserService[F]) {
-  val dsl = Http4sDsl[F]
-  import dsl._
+class UserRoutes[F[_] : Concurrent](userService: UserService[F]) extends Http4sDsl[F] {
 
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "users" / userId =>
@@ -29,8 +27,8 @@ class UserRoutes[F[_]: Concurrent](userService: UserService[F]) {
       }.handleErrorWith(handleUUIDError)
 
     case req@POST -> Root / "users" =>
-      req.as[UserDetails].flatMap { user =>
-        validateUser(user) match {
+      req.as[UserForm].flatMap { userForm =>
+        UserFormValidator.validateUserForm(userForm) match {
           case Validated.Valid(validUser) =>
             userService.createUser(validUser).flatMap(createdUser => Created(createdUser))
           case Validated.Invalid(errors) =>
@@ -54,15 +52,4 @@ class UserRoutes[F[_]: Concurrent](userService: UserService[F]) {
 
   private def handleUUIDError(error: Throwable): F[Response[F]] =
     BadRequest(Json.obj("error" -> Json.fromString("Invalid UUID format")))
-
-  def validateUser(user: UserDetails): ValidatedNel[String, UserDetails] = {
-    val nameValidation: ValidatedNel[String, String] =
-      if (user.name.nonEmpty) user.name.validNel
-      else "Name cannot be empty".invalidNel
-    val ageValidation: ValidatedNel[String, Int] =
-      if (user.age > 0) user.age.validNel
-      else "Age must be positive".invalidNel
-
-    (nameValidation, ageValidation).mapN((_, _) => user)
-  }
 }
