@@ -30,20 +30,26 @@ graph TD
     H -- No --> D;
 ```
 
-## Topics Covered
+## 📚 Covered Topics (http4s)
 
-1.  **HTTP Basics with http4s**
+1.  **HTTP Basics with http4s:**
     * Introduction to http4s and basic HTTP handling.
     * Logging requests and responses.
     * Understanding Blaze vs. Ember servers.
-2.  **Path and Query Parameters**
+2.  **Path and Query Parameters:**
     * Handling path and query parameters in http4s.
     * Code organization for http4s web applications.
     * Error handling for LocalDate query parameters.
-3.  **JSON Handling in http4s**
+3.  **JSON Handling in http4s:**
     * Working with JSON requests and responses using Circe.
     * Automatic derivation of JSON encoders and decoders.
     * Troubleshooting common JSON handling issues.
+4.  **Error Handling in http4s:**
+    * Using `EitherT` and `ValidatedNel` for error handling.
+    * Creating custom error responses.
+    * Organizing error types and validation logic.
+    * Form objects and validation.
+    * Testing validation logic.
 
 ## Notes
 
