@@ -1,22 +1,25 @@
 package exercise4.routes
 
+import cats.MonadThrow
 import cats.data.{Validated, ValidatedNel}
-import cats.effect.IO
-import cats.implicits._
+import cats.effect._
+import cats.syntax.all._
 import exercise4.error.{AppError, UserNotFound}
 import exercise4.model.UserDetails
 import exercise4.service.UserService
 import io.circe.Json
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.circe._
-import org.http4s.dsl.io._
+import org.http4s.dsl.Http4sDsl
 import org.http4s.{HttpRoutes, Response}
 
 import java.util.UUID
 
-class UserRoutes(userService: UserService[IO]) {
+class UserRoutes[F[_]: Concurrent](userService: UserService[F]) {
+  val dsl = Http4sDsl[F]
+  import dsl._
 
-  val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "users" / userId =>
       parseUUID(userId).flatMap { id =>
         userService.getUser(id).value.flatMap {
@@ -40,16 +43,16 @@ class UserRoutes(userService: UserService[IO]) {
         Json.fromString(s"Error processing request: ${e.getMessage}"))))
   }
 
-  private def parseUUID(userId: String): IO[UUID] =
-    IO.fromEither(Either.catchNonFatal(UUID.fromString(userId))
+  private def parseUUID(userId: String): F[UUID] =
+    MonadThrow[F].fromEither(Either.catchNonFatal(UUID.fromString(userId))
       .leftMap(_ => new IllegalArgumentException("Invalid UUID format")))
 
-  private def handleUserError(error: AppError): IO[Response[IO]] = error match {
+  private def handleUserError(error: AppError): F[Response[F]] = error match {
     case _: UserNotFound => NotFound(Json.obj("error" -> Json.fromString("User not found")))
     case _ => InternalServerError(Json.obj("error" -> Json.fromString("Internal server error")))
   }
 
-  private def handleUUIDError(error: Throwable): IO[Response[IO]] =
+  private def handleUUIDError(error: Throwable): F[Response[F]] =
     BadRequest(Json.obj("error" -> Json.fromString("Invalid UUID format")))
 
   def validateUser(user: UserDetails): ValidatedNel[String, UserDetails] = {
