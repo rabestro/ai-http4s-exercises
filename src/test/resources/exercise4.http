@@ -7,3 +7,14 @@ GET {{host}}/users/123e4567-e89b-12d3-a456-426614174001
 ###
 GET {{host}}/users/invalid-uuid
 
+### Creates a new user with the specified details
+# The UUID is a valid identifier for the user in the system.
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "id": "{{$random.uuid}}",
+  "name": "{{$random.name.name}}",
+  "age": {{$random.integer(18, 65)}}
+}
+

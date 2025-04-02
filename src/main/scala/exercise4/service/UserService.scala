@@ -18,4 +18,12 @@ class UserService[F[_]: Monad] {
       EitherT.leftT(UserNotFound(userId))
     }
   }
+
+  def createUser(user: User): F[User] = {
+    // Simulate an effectful database insert
+    Monad[F].pure {
+      // Perform database insert here
+      user
+    }
+  }
 }

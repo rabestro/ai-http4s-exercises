@@ -3,6 +3,7 @@ package exercise4.routes
 import cats.effect.IO
 import cats.implicits._
 import exercise4.error.{AppError, UserNotFound}
+import exercise4.model.User
 import exercise4.service.UserService
 import io.circe.Json
 import org.http4s.circe.CirceEntityCodec._
@@ -22,10 +23,16 @@ class UserRoutes(userService: UserService[IO]) {
           case Left(error) => handleUserError(error)
         }
       }.handleErrorWith(handleUUIDError)
+
+    case req@POST -> Root / "users" =>
+      req.as[User].flatMap { user =>
+        userService.createUser(user).flatMap(createdUser => Created(createdUser))
+      }.handleErrorWith(_ => BadRequest(Json.obj("error" -> Json.fromString("Invalid User data"))))
   }
 
   private def parseUUID(userId: String): IO[UUID] =
-    IO.fromEither(Either.catchNonFatal(UUID.fromString(userId)).leftMap(_ => new IllegalArgumentException("Invalid UUID format")))
+    IO.fromEither(Either.catchNonFatal(UUID.fromString(userId))
+      .leftMap(_ => new IllegalArgumentException("Invalid UUID format")))
 
   private def handleUserError(error: AppError): IO[Response[IO]] = error match {
     case _: UserNotFound => NotFound(Json.obj("error" -> Json.fromString("User not found")))
