@@ -14,7 +14,7 @@ object Solution extends IOApp {
   implicit val logging: LoggerFactory[IO] = Slf4jFactory.create[IO]
 
   private val userService = new UserService[IO]
-  private val userRoutes = new UserRoutes(userService).routes
+  private val userRoutes = new UserRoutes[IO](userService).routes
   private val loggedRoutes = Logger.httpApp(
     logHeaders = true,
     logBody = true
